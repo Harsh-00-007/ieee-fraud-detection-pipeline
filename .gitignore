@@ -1,0 +1,9 @@
+# Virtual Environment
+.venv/
+__pycache__/
+
+# Datasets (Never commit raw data)
+data/*.csv
+
+# Large Model Artifacts
+models/*.joblib
