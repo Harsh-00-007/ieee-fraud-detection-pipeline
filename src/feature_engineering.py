@@ -20,7 +20,7 @@ def select_features(df: pd.DataFrame, features_to_keep: list) -> pd.DataFrame:
 def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     for col in df.columns:
         if pd.api.types.is_numeric_dtype(df[col]):
-            df[col] = df[col].fillna(df[col].median())
+            df[col] = df[col].fillna(-999)
         else:
             df[col] = df[col].fillna('missing')
     return df

@@ -11,6 +11,20 @@ def generate_submission(model, test_processed: pd.DataFrame):
     
     # 2. Drop the ID column so we only feed the 50 math features into XGBoost
     X_test = test_processed.drop(['TransactionID'], axis=1)
+
+
+    # Extract the exact column names and order the model was trained on
+    expected_cols = model.feature_names_in_
+    
+    # Check if we are missing any columns in the test set
+    for col in expected_cols:
+        if col not in X_test.columns:
+            print(f"Warning: Missing column {col} in test data. Filling with -999.")
+            X_test[col] = -999
+            
+    # Force X_test to have the exact same columns in the exact same order
+    X_test = X_test[expected_cols]
+    
     
     # 3. Predict the PROBABILITY of fraud (using [:, 1] to get the "Fraud" column)
     predictions = model.predict_proba(X_test)[:, 1]

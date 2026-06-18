@@ -1,20 +1,23 @@
 from src.data_loader import load_and_merge
+import pandas as pd
 from src.feature_engineering import run_feature_pipeline
 from src.model_training import prepare_data, train_xgboost, evaluate_and_save
 from src.inference import generate_submission
 from src.explainability import plot_feature_importance
+
 
 # ==========================================
 # 1. FEATURE SELECTION CONFIGURATION
 # ==========================================
 # Define base features
 MY_FEATURES = [
-    'TransactionAmt', 'ProductCD', 'addr1', 'addr2', 
-    'P_emaildomain', 'R_emaildomain', 'DeviceType', 'DeviceInfo'
+    'TransactionAmt', 'ProductCD', 'addr1', 'addr2', 'card1',
+    'card2', 'card3', 'card4', 'card5', 'card6','P_emaildomain',
+    'R_emaildomain', 'DeviceType', 'DeviceInfo'
 ]
 
-# Dynamically generate numbered features to keep the code clean
-MY_FEATURES += [f'card{i}' for i in range(1, 7)]      # card1 to card6
+MY_FEATURES += [f'C{i}' for i in range(1, 15)]     
+MY_FEATURES += [f'V{i}' for i in range(1, 51)]        
 MY_FEATURES += [f'M{i}' for i in range(1, 10)]        # M1 to M9
 MY_FEATURES += [f'id_{i}' for i in range(12, 39)]     # id_12 to id_38
 
@@ -31,10 +34,20 @@ if __name__ == "__main__":
     # Step 2: Process the Training Set
     print("\nProcessing Training Data...")
     train_processed = run_feature_pipeline(train, features_to_keep=MY_FEATURES)
-    
     # Step 3: Process the Testing Set identically to prevent data leakage
     print("\nProcessing Test Data...")
     test_processed = run_feature_pipeline(test, features_to_keep=MY_FEATURES)
+
+    # ---> PASTE IT EXACTLY HERE <---
+    print("Aligning categorical data structures...")
+    for col in train_processed.columns:
+        if train_processed[col].dtype.name == 'category' and col in test_processed.columns:
+            test_processed[col] = pd.Categorical(
+                test_processed[col], 
+                categories=train_processed[col].cat.categories
+            )
+
+    print("Status: READY FOR MODEL TRAINING")
 
     # Step 4: Final Output Validation
     print("\n========================================")
